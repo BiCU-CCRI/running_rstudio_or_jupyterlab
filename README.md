@@ -26,3 +26,25 @@ Patricia provided us with a sample sbatch submission script (file `rstudio-singu
 >Patricia
 
 
+## Rstudio server on CCRI's machines
+
+Adapted Patricia's script to CCRI's machines (original file `rstudio-singularity-password.bash`, new file `run_singularity_rstudio_ccri.sh`). The following changes were made:
+
+* Removed sbatch commands
+* Removed module load command
+* Added a variable for singularityimage
+* Added the R session default working directory to be printed into the R session configuration file 
+* Removed /nobackup and /research from the `SINGULARITY_BIND` variable
+* Added /scratch to the `SINGULARITY_BIND` variable
+
+### Usage
+
+1. Update the variables in the script to match your image name, R version and working directory
+2. Start a tmux session
+3. Run `bash run_singularity_rstudio_ccri.sh`
+4. In a web browser go to the `machineIPaddress:port`, which will be printed to screen after starting the script
+
+### Rstudio server singularity images available:
+
+ `~/bioinf_isilon/core_bioinformatics_unit/Public/singularity_images/ccribioinf_dockrstudio_4.2.0-v1.sif`
+  `~/bioinf_isilon/core_bioinformatics_unit/Public/singularity_images/wouter_m_dockrstudio_v4.3.2-V1.simg`
