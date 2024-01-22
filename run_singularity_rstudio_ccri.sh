@@ -6,7 +6,7 @@ version='4.3'
 # path to your current working directory
 workdir=/scratch/research/bicu/celine_p/wkdirs/test/new_build
 # specify singularity image file name
-singularityimage=wouter_m_dockrstudio_v4.3.2-V1.simg
+singularityimage=/home/$(whoami)/bioinf_isilon/core_bioinformatics_unit/Public/singularity_images/wouter_m_dockrstudio_v4.3.2-V1.simg
 
 mkdir -p -m 700 ${workdir}/run ${workdir}/tmp ${workdir}/var/lib/rstudio-server ${workdir}/R/$version
 
