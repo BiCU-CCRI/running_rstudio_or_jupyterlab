@@ -5,10 +5,12 @@
 version='4.3'
 # path to your current working directory
 workdir=$(pwd)
+# path to place your rserver files (could be the same as your working directory but anything on isilon is not possible) 
+rserverdir=/scratch/research/bicu/celine_p/wkdirs/rstudio_singularity/session_test2/
 # specify singularity image file name
 singularityimage=/home/$(whoami)/bioinf_isilon/core_bioinformatics_unit/Public/singularity_images/wouter_m_dockrstudio_v4.3.2-V1.simg
 
-mkdir -p -m 700 ${workdir}/run ${workdir}/tmp ${workdir}/var/lib/rstudio-server ${workdir}/R/$version
+mkdir -p -m 700 ${workdir}/run ${workdir}/tmp ${workdir}/R/$version ${rserverdir}/var/lib/rstudio-server ${rserverdir}/var/run
 
 cat > ${workdir}/rsession.conf <<END
 # R Session Configuration File
@@ -21,7 +23,7 @@ END
 # Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with
 # personal libraries from any R installation in the host environment
 
-export SINGULARITY_BIND="${workdir}/run:/run,${workdir}/tmp:/tmp,${workdir}/rsession.conf:/etc/rstudio/rsession.conf,${workdir}/var/lib/rstudio-server:/var/lib/rstudio-server,${workdir}/run:/var/run,/scratch:/scratch,/home:/home"
+export SINGULARITY_BIND="${workdir}/run:/run,${workdir}/tmp:/tmp,${workdir}/rsession.conf:/etc/rstudio/rsession.conf,${rserverdir}/var:/var,/scratch:/scratch,/home:/home"
 
 # Do not suspend idle sessions.
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
