@@ -41,7 +41,7 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
 3. Look into the file rstudio-singularity-%j.log which will have the following line right at the top 
    "Running RStudio at `machineIPaddress:port`"
 4. In a terminal, enter the following command
-   `ssh -N -f -L localhost:<port>:localhost:<port> <username>@<machineIPaddress>`
+   `ssh -L localhost:<port>:localhost:<port> <username>@<machineIPaddress>`
 5. Open localhost:<port> in your browser
 6. Login to the session with your username and the password specified in the run script 
 
