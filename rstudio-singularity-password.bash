@@ -23,9 +23,10 @@ version=4.4
 singularityimage=/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif
 path_renv_host=/nobackup/lab_ccri_bicu/public/resources/renv_cache/
 
-# Optional: to keep settings consistent between different projects it's possible import them together with themes
+# Optional: to keep settings consistent between different projects it's possible import them together with color themes
 # dotconfig=$(pwd)/.config/rstudio
 # This needs to be added to the SINGULARITY_BIND to make it work
+# Colorthemes are from: https://github.com/catppuccin/rstudio
 
 #mkdir -p -m 700 ${workdir}/run ${workdir}/tmp ${workdir}/var/lib/rstudio-server ${workdir}/R/$version
 
