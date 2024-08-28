@@ -21,8 +21,11 @@ module load singularity
 workdir=$(pwd)
 version=4.4
 singularityimage=/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif
-dotconfig=$(pwd)/.config/rstudio
 path_renv_host=/nobackup/lab_ccri_bicu/public/resources/renv_cache/
+
+# Optional: to keep settings consistent between different projects it's possible import them together with themes
+# dotconfig=$(pwd)/.config/rstudio
+# This needs to be added to the SINGULARITY_BIND to make it work
 
 #mkdir -p -m 700 ${workdir}/run ${workdir}/tmp ${workdir}/var/lib/rstudio-server ${workdir}/R/$version
 
@@ -42,7 +45,9 @@ mkdir -p -m 700 ${workdir}/RStdServr/R/$version
 # Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with
 # personal libraries from any R installation in the host environment
 
-export SINGULARITY_BIND="${workdir}/RStdServr/run:/run,${workdir}/RStdServr/tmp:/tmp,${dotconfig}:/home/${USER}/.config/rstudio,${workdir}/RStdServr/var/lib/rstudio-server:/var/lib/rstudio-server,${workdir}/RStdServr/run:/var/run,${path_renv_host}/:${workdir}/RStdServr/renv,${workdir}:/home/$(whoami)"
+# to import rstudio settings add this:
+# ${dotconfig}:/home/${USER}/.config/rstudio
+export SINGULARITY_BIND="${workdir}/RStdServr/run:/run,${workdir}/RStdServr/tmp:/tmp,${workdir}/RStdServr/var/lib/rstudio-server:/var/lib/rstudio-server,${workdir}/RStdServr/run:/var/run,${path_renv_host}/:${workdir}/RStdServr/renv,${workdir}:/home/$(whoami)"
 
 # Do not suspend idle sessions.
 # alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
