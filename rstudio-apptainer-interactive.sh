@@ -24,25 +24,24 @@ echo "======================"
 
 module load apptainer/1.1.9
 
-WORKDIR=$(pwd)
+RSTUDIO_SERVER_CONFIG_DIR="$(pwd)/rstudio-server"
 R_VERSION="4.4"
 R_APPTAINER_IMG="/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif"
 
-mkdir -p -m 700 "${WORKDIR}/run" "${WORKDIR}/tmp" "${WORKDIR}/var/lib/rstudio-server" "${WORKDIR}/R/$R_VERSION"
+mkdir -p -m 700 "${RSTUDIO_SERVER_CONFIG_DIR}/run" "${RSTUDIO_SERVER_CONFIG_DIR}/tmp" "${RSTUDIO_SERVER_CONFIG_DIR}/var/lib/rstudio-server" \
+"${RSTUDIO_SERVER_CONFIG_DIR}/R/$R_VERSION"
 
-cat > "${WORKDIR}/rsession.conf" <<END
-# R Session Configuration File
-
-r-libs-user="${WORKDIR}/R/%v"
+# R Session Configuration File https://docs.posit.co/ide/server-pro/reference/rsession_conf.html
+cat > "${RSTUDIO_SERVER_CONFIG_DIR}/rsession.conf" <<END
+# Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with personal libraries from any R installation in the host environment
+r-libs-user=R/$R_VERSION
+# Prevent R session from timeout
 session-timeout-minutes=0
 END
 
-# Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with
-# personal libraries from any R installation in the host environment
-
-export APPTAINER_BIND="${WORKDIR}/run:/run,${WORKDIR}/tmp:/tmp,${WORKDIR}/rsession.conf:/etc/rstudio/rsession.conf,\
-${WORKDIR}/var/lib/rstudio-server:/var/lib/rstudio-server,${WORKDIR}/run:/var/run,/nobackup:/nobackup,/research:/research,\
-${WORKDIR}:/home/${USER}"
+export APPTAINER_BIND="${RSTUDIO_SERVER_CONFIG_DIR}/run:/run,${RSTUDIO_SERVER_CONFIG_DIR}/tmp:/tmp,\
+${RSTUDIO_SERVER_CONFIG_DIR}/rsession.conf:/etc/rstudio/rsession.conf,${RSTUDIO_SERVER_CONFIG_DIR}/var/lib/rstudio-server:/var/lib/rstudio-server,\
+${RSTUDIO_SERVER_CONFIG_DIR}/run:/var/run,${RSTUDIO_SERVER_CONFIG_DIR}:/home/${USER},/nobackup:/nobackup,/research:/research"
 
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
@@ -57,8 +56,8 @@ readonly ADD=$(nslookup $(hostname) | grep -i "address" | awk -F" " '{print $2}'
 
 cat 1>&2 <<END
 Running RStudio at ${ADD}:${PORT}
-Connect with: 
-ssh -N -f -L localhost:${PORT}:localhost:${PORT} ${USER}@${ADD} 
+Connect with:
+ssh -N -f -L localhost:${PORT}:localhost:${PORT} ${USER}@${ADD}
 on your local machine and paste:
 localhost:${PORT}
 to your web browser.
