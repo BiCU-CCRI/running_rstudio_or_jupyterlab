@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name rstudio-apptainer-interactive
+#SBATCH --job-name rstudio_apptainer_interactive
 #SBATCH --partition=interactiveq
 #SBATCH --qos=interactiveq
 #SBATCH --nodes=1
@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32000
 #SBATCH --time 12:00:00
-#SBATCH --output rstudio-apptainer-%j.log
+#SBATCH --output rstudio_apptainer_interactive_%j.log
 
 # Other common SLURM variables https://docs.hpc.shef.ac.uk/en/latest/referenceinfo/scheduler/SLURM/SLURM-environment-variables.html#gsc.tab=0
 echo "======================"
@@ -24,42 +24,42 @@ echo "======================"
 
 module load apptainer/1.1.9
 
-RSTUDIO_SERVER_CONFIG_DIR="$(pwd)/rstudio-server"
-R_VERSION="4.4"
-R_APPTAINER_IMG="/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif"
+rstudio_server_config_dir="$(pwd)/.rstudio_server"
+r_version="4.4"
+r_apptainer_img="/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif"
 
-mkdir -p -m 700 "${RSTUDIO_SERVER_CONFIG_DIR}/run" "${RSTUDIO_SERVER_CONFIG_DIR}/tmp" "${RSTUDIO_SERVER_CONFIG_DIR}/var/lib/rstudio-server" \
-"${RSTUDIO_SERVER_CONFIG_DIR}/R/$R_VERSION"
+mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}/tmp" "${rstudio_server_config_dir}/var/lib/rstudio-server" \
+"${rstudio_server_config_dir}/R/$r_version"
 
 # R Session Configuration File https://docs.posit.co/ide/server-pro/reference/rsession_conf.html
-cat > "${RSTUDIO_SERVER_CONFIG_DIR}/rsession.conf" <<END
+cat > "${rstudio_server_config_dir}/rsession.conf" <<END
 # Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with personal libraries from any R installation in the host environment
-r-libs-user=R/$R_VERSION
+r-libs-user=R/$r_version
 # Prevent R session from timeout
 session-timeout-minutes=0
 END
 
-export APPTAINER_BIND="${RSTUDIO_SERVER_CONFIG_DIR}/run:/run,${RSTUDIO_SERVER_CONFIG_DIR}/tmp:/tmp,\
-${RSTUDIO_SERVER_CONFIG_DIR}/rsession.conf:/etc/rstudio/rsession.conf,${RSTUDIO_SERVER_CONFIG_DIR}/var/lib/rstudio-server:/var/lib/rstudio-server,\
-${RSTUDIO_SERVER_CONFIG_DIR}/run:/var/run,${RSTUDIO_SERVER_CONFIG_DIR}:/home/${USER},/nobackup:/nobackup,/research:/research"
+export APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
+${rstudio_server_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,${rstudio_server_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
+${rstudio_server_config_dir}/run:/var/run,${rstudio_server_config_dir}:/home/${USER},/nobackup:/nobackup,/research:/research"
 
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
 # https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
 export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
 export APPTAINERENV_USER="${USER}"
-export APPTAINERENV_PASSWORD="test1"
+export APPTAINERENV_PASSWORD="test0"
 
 # Get unused socket per https://unix.stackexchange.com/a/132524
-readonly PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
-readonly ADD=$(nslookup $(hostname) | grep -i "address" | awk -F" " '{print $2}' | awk -F# '{print $1}' | tail -n 1)
+readonly port=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+readonly address=$(nslookup $(hostname) | grep -i "address" | awk -F" " '{print $2}' | awk -F# '{print $1}' | tail -n 1)
 
 cat 1>&2 <<END
-Running RStudio at ${ADD}:${PORT}
+Running RStudio at ${address}:${port}
 Connect with:
-ssh -N -f -L localhost:${PORT}:localhost:${PORT} ${USER}@${ADD}
+ssh -N -f -L localhost:${port}:localhost:${port} ${USER}@${address}
 on your local machine and paste:
-localhost:${PORT}
+localhost:${port}
 to your web browser.
 END
 
@@ -67,8 +67,8 @@ echo "======================"
 echo "Job started at: $(date)"
 
 apptainer exec \
-    --cleanenv ${R_APPTAINER_IMG} \
-    rserver --www-port ${PORT} \
+    --cleanenv ${r_apptainer_img} \
+    rserver --www-port ${port} \
             --server-user=${USER} \
             --auth-none=0 \
             --auth-pam-helper-path=pam-helper

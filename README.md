@@ -45,7 +45,7 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
 - Slurm standard out log file gets written out to the directory where the script
  is run
 - Working directory is set as the path from where the script is run
-- The path to the Apptainer image is specified to the variable `R_APPTAINER_IMG`
+- The path to the Apptainer image is specified to the variable `r_apptainer_img`
  at the top of the script, which is used in the Apptainer exec command.
 - In the `APPTAINER_BIND` variable, the path of the working directory on the CeMM
  cluster is bound to `/home/${USER}` in RStudio, instead of binding `/home` of
@@ -53,16 +53,15 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
 
 ### Usage
 
-1. Copy the [`rstudio-apptainer-interactive.sh`](rstudio-apptainer-interactive.sh)
+1. Copy the [`rstudio_apptainer_interactive.sh`](rstudio_apptainer_interactive.sh)
  script to your project work directory
 2. Update the variables in the script to match your image name
-3. Run `sbatch rstudio-apptainer-interactive.sh`
-4. Look into the `rstudio-apptainer-<jobID>.log` file for line: "`ssh -N -f -L localhost:...`"
+3. Run `sbatch rstudio_apptainer_interactive.sh`
+4. Look into the `rstudio_apptainer_interactive_<jobID>.log` file for line startign with: "`ssh -N -f -L localhost:`"
 5. Copy-paste the `ssh` line to your terminal and connect to the interactive node
-6. Look into the `rstudio-apptainer-<jobID>.log` file for line: "`localhost:...`"
-7. Copy-paste the `localhost` line into your web brower
-8. Login with the username and password specified in the `rstudio-apptainer-interactive.sh`
- script
+6. Look into the `rstudio_apptainer_interactive_<jobID>.log` file for line starting with: "`localhost:`"
+7. Copy-paste the `localhost:` line into your web brower
+8. Login with the username and password specified in the `rstudio_apptainer_interactive.sh` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD`)
 
 ### Available Rstudio server images
 
