@@ -50,18 +50,20 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
 - In the `APPTAINER_BIND` variable, the path of the working directory on the CeMM
  cluster is bound to `/home/${USER}` in RStudio, instead of binding `/home` of
  the CeMM cluster to `/home` in RStudio
+- SSHing into the interactive node to set up port forwarding is no longer necessary - 
+  you can copy-paste the link in the log file directly into the browser from the CCRI 
+  or CeMM networks.
 
 ### Usage
 
 1. Copy the [`rstudio_apptainer_interactive.sh`](rstudio_apptainer_interactive.sh)
- script to your project work directory
+  script to your project work directory
 2. Update the variables in the script to match your image name
 3. Run `sbatch rstudio_apptainer_interactive.sh`
-4. Look into the `rstudio_apptainer_interactive_<jobID>.log` file for line startign with: "`ssh -N -f -L localhost:`"
-5. Copy-paste the `ssh` line to your terminal and connect to the interactive node
-6. Look into the `rstudio_apptainer_interactive_<jobID>.log` file for line starting with: "`localhost:`"
-7. Copy-paste the `localhost:` line into your web brower
-8. Login with the username and password specified in the `rstudio_apptainer_interactive.sh` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD`)
+4. Look into the `rstudio_apptainer_interactive_<jobID>.log` file for the link: "`http://<hostname>.int.cemm.at:<port>`"
+  The hostname is the node the job is running on (e.g. d004) and the port is the network port (between 8000 and 9000 - these are available over the CCRI network). 
+5. Copy-paste the "`http://<hostname>.int.cemm.at:<port>`" link into your web browser (or cmd + click if using a Mac)
+6. Login with the username and password specified in the `rstudio_apptainer_interactive.sh` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD`)
 
 ### Available Rstudio server images
 

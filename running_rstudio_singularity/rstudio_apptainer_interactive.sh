@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32000
+#SBATCH --mem=32G
 #SBATCH --time 12:00:00
 #SBATCH --output rstudio_apptainer_interactive_%j.log
 
@@ -50,17 +50,30 @@ export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
 export APPTAINERENV_USER="${USER}"
 export APPTAINERENV_PASSWORD="test0"
 
-# Get unused socket per https://unix.stackexchange.com/a/132524
-readonly port=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
-readonly address=$(nslookup $(hostname) | grep -i "address" | awk -F" " '{print $2}' | awk -F# '{print $1}' | tail -n 1)
+# Get unused socket between 8000 and 9000 (these are accessible within the CCRI network):
+readonly port=$(python -c '
+import socket
+import random
+
+def find_port_in_range(start=8000, end=9000):
+    while True:
+        port = random.randint(start, end)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("", port))
+                return port
+            except OSError:
+                continue
+
+print(find_port_in_range())
+')
+readonly hostname=$(hostname)
 
 cat 1>&2 <<END
-Running RStudio at ${address}:${port}
-Connect with:
-ssh -N -f -L localhost:${port}:localhost:${port} ${USER}@${address}
-on your local machine and paste:
-localhost:${port}
-to your web browser.
+
+To access the server, copy and paste this URL into your web browser (cmd + click for Mac users):
+http://${hostname}.int.cemm.at:${port}
+
 END
 
 echo "======================"
