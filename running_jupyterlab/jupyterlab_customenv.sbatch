@@ -3,16 +3,16 @@
 #SBATCH --qos=interactiveq
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8G
-#SBATCH --time 12:00:00
-#SBATCH --job-name jupyter-lab
-#SBATCH --output jupyter-lab-%j.log
+#SBATCH --time=12:00:00
+#SBATCH --job-name=jupyter-lab
+#SBATCH --output=jupyter-lab-%j.log
 
 # update these variables before running the script
 miniconda_path=/path/to/your/miniconda3
 env=example_env
 
 # get tunneling info
-port=$(shuf -i8000-9999 -n1)
+port=$(shuf -i8000-9000 -n1)
 node=$(hostname).int.cemm.at
 user=$(whoami)
 
