@@ -13,7 +13,7 @@ Patricia provides a sample sbatch submission script `jupyterlab.sbatch` to run a
 
 3. Update the `#SBATCH` parameters in the script (`--mem`, `--time`, `--cpus-per-task`).
 
-4. Run the script.
+4. Run the script.  
 `sbatch jupyterlab.sbatch`
 
 5. Scroll to the bottom of the `jupyter-lab-<jobID>.log` file to find the link starting with "`http//d0...`"
@@ -29,27 +29,27 @@ To use your own environment as a kernel and/or to access the CeMM GPU nodes via 
 
 1. Connect to a login node using ssh.
 
-2. Activate your conda/mamba environment.
-`mamba activate <your-env-name`
+2. Activate your conda/mamba environment.  
+`mamba activate <your-env-name>`
 
-3. Install `jupyterlab` in your conda/mamba environment.
+3. Install `jupyterlab` in your conda/mamba environment.    
 `mamba install jupyterlab`
 
-4. Check that ipykernel was also installed as a dependency of `jupyterlab` (should be listed when running this command).
+4. Check that ipykernel was also installed as a dependency of `jupyterlab` (should be listed when running this command).  
 `mamba list ipykernel` 
 
-5. To add your environment as a kernel, run the following command.
+5. To add your environment as a kernel, run the following command.  
 `python -m ipykernel install --user --name <your-env-name> --display-name "<Your Env Name>"`
 
-6. Copy the relevant sbatch submission script to your project work directory.
-CPU usage only: `jupyterlab_customenv.sbatch`
-GPU usage: `jupyterlab_customenv_gpu.sbatch`
+6. Copy the relevant sbatch submission script to your project work directory.  
+CPU usage only: `jupyterlab_customenv.sbatch`  
+GPU usage: `jupyterlab_customenv_gpu.sbatch`  
 The `#SBATCH` parameters in the GPU script are set up to allow access to 1 L4 GPU node. For more information on accessing GPU nodes on the CeMM cluster, check the relevant pages on the CeMM Sharepoint.
 
 7. Update the `miniconda_path` and `env` variables in the script to match your environment, and update the `#SBATCH` parameters in the script (`--mem`, `--time`, `--cpus-per-task`).
 
-8. Run the script.
-CPU usage only: `sbatch jupyterlab_customenv.sbatch`
+8. Run the script.  
+CPU usage only: `sbatch jupyterlab_customenv.sbatch`  
 GPU usage: `sbatch jupyterlab_customenv_gpu.sbatch`
 
 9. Scroll to the bottom of the `jupyter-lab-<jobID>.log` file to find the link starting with "`http//d0...`"
