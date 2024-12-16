@@ -29,19 +29,40 @@ r_version="4.4"
 r_apptainer_img="/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif"
 
 mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}/tmp" "${rstudio_server_config_dir}/var/lib/rstudio-server" \
-"${rstudio_server_config_dir}/R/$r_version"
+    "${rstudio_server_config_dir}/R/$r_version"
 
 # R Session Configuration File https://docs.posit.co/ide/server-pro/reference/rsession_conf.html
-cat > "${rstudio_server_config_dir}/rsession.conf" <<END
+cat >"${rstudio_server_config_dir}/rsession.conf" <<END
 # Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with personal libraries from any R installation in the host environment
 r-libs-user=R/$r_version
 # Prevent R session from timeout
 session-timeout-minutes=0
 END
 
+# .Rprofile and default functions
+cat >"${rstudio_server_config_dir}/.Rprofile" <<END
+source(".rstudio_server/.Ractivate.R")
+END
+
+# Location or .Rprofile - project-wide
+cat >".Renviron" <<END
+R_PROFILE_USER=".rstudio_server/.Rprofile"
+END
+
+# Functions to load at startup
+cat >"${rstudio_server_config_dir}/.Ractivate.R" <<END
+save_session <- function() {
+  savehistory(file = "~/.Rhistory")
+  save.image(file = "~/.RData")
+  cat("Session saved at", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n")
+}
+END
+
 export APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
 ${rstudio_server_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,${rstudio_server_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
-${rstudio_server_config_dir}/run:/var/run,${rstudio_server_config_dir}:/home/${USER},/nobackup:/nobackup,/research:/research"
+${rstudio_server_config_dir}/run:/var/run,\
+$(pwd):/home/${USER},${rstudio_server_config_dir}:/home/${USER}/.rstudio_server,\
+/nobackup:/nobackup,/research:/research"
 
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
@@ -82,9 +103,9 @@ echo "Job started at: $(date)"
 apptainer exec \
     --cleanenv ${r_apptainer_img} \
     rserver --www-port ${port} \
-            --server-user=${USER} \
-            --auth-none=0 \
-            --auth-pam-helper-path=pam-helper
+    --server-user=${USER} \
+    --auth-none=0 \
+    --auth-pam-helper-path=pam-helper
 
 echo "Job finished at: $(date)"
 
