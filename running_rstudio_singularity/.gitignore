@@ -1,0 +1,8 @@
+.cache
+.config
+.local
+logs
+R
+.Renviron
+.Rhistory
+.rstudio_server
