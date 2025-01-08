@@ -37,19 +37,19 @@ mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}
 # R Session Configuration File https://docs.posit.co/ide/server-pro/reference/rsession_conf.html
 cat >"${rstudio_server_config_dir}/rsession.conf" <<END
 # Set R_LIBS_USER to a path specific to rocker/rstudio to avoid conflicts with personal libraries from any R installation in the host environment
-r-libs-user=R/${r_version}
+r-libs-user=${rstudio_server_config_dir}/R/${r_version}
 # Prevent R session from timeout
 session-timeout-minutes=0
 END
 
 # .Rprofile and default functions
 cat >"${rstudio_server_config_dir}/.Rprofile" <<END
-source(".rstudio_server/.Ractivate.R")
+source("${rstudio_server_config_dir}/.Ractivate.R")
 END
 
 # Location or .Rprofile - project-wide
 cat >".Renviron" <<END
-R_PROFILE_USER=".rstudio_server/.Rprofile"
+R_PROFILE_USER="${rstudio_server_config_dir}/.Rprofile"
 END
 
 # Functions to load at startup
@@ -64,7 +64,7 @@ END
 export APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
 ${rstudio_server_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,${rstudio_server_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
 ${rstudio_server_config_dir}/run:/var/run,\
-$(pwd):/home/${USER},${rstudio_server_config_dir}:/home/${USER}/.rstudio_server,\
+$(pwd):/home/${USER},${rstudio_server_config_dir}:${rstudio_server_config_dir},\
 /nobackup:/nobackup,/research:/research"
 
 # Do not suspend idle sessions

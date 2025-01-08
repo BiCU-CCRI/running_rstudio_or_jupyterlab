@@ -3,6 +3,8 @@
 How to get an RStudio Server running with Apptainer/Singularity on the CeMM cluster or CCRI machines (those where Apptainer/Singularity
  has been installed).
 
+You can use the included [`.gitignore`](.gitignore) to exclude RStudio Server files you likely do not want to track with `git`.
+
 ## Rstudio server on CeMM's cluster
 
 Patricia provided us with a sample sbatch submission script file `run_rstudio_apptainer_cemm.sh`
