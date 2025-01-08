@@ -64,6 +64,11 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
 5. Copy-paste the "`http://<hostname>.int.cemm.at:<port>`" link into your web browser (or cmd + click if using a Mac)
 6. Login with the username and password specified in the `run_rstudio_apptainer_cemm.sh` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD`)
 
+#### Automatically loaded custom functions
+
+You can use `~/.Ractivate.R` to automatically load custom functions into RStudio Server at startup. An example `save_session()`
+ function allows you to save both Rhistory (into `~/.Rhistory`) and RData (into `~/.RData`) with a single command.
+
 ### Available Rstudio Server images
 
 #### Preferred image
