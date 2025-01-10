@@ -22,9 +22,9 @@ Patricia provided us with a sample sbatch submission script file `run_rstudio_ap
  example from rocker:
 
 ```bash
-module load singularity
+module load apptainer/1.1.9
 cd /nobackup/<yourgroup>/<youruser>/rstudio/
-singularity pull --name rstudio-4.2.simg docker://rocker/rstudio:4.2
+apptainer pull --name rstudio-4.2.simg docker://rocker/rstudio:4.2
  ```
 >
 >You can replace 4.2 with a different rocker rstudio image.  Also, you are not limited
@@ -61,7 +61,7 @@ Adapted Patricia's script to isolate different RStudio sessions based on the wor
   script to your project work directory
 2. Update the variables in the script to match your image name
 3. Run `sbatch run_rstudio_apptainer_cemm.sh`
-4. Look into the `rstudio_apptainer_<jobID>.log` file for the link: "`http://<hostname>.int.cemm.at:<port>`"
+4. Look into the `logs/rstudio_apptainer_<jobID>.log` file for the link: "`http://<hostname>.int.cemm.at:<port>`"
   The hostname is the node the job is running on (e.g. d004) and the port is the network port (between 8000 and 9000 - these are available over the CCRI network).
 5. Copy-paste the "`http://<hostname>.int.cemm.at:<port>`" link into your web browser (or cmd + click if using a Mac)
 6. Login with the username and password specified in the `run_rstudio_apptainer_cemm.sh` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD`)

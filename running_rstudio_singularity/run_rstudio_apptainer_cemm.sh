@@ -29,7 +29,7 @@ echo "======================"
 
 module load apptainer/1.1.9
 
-rstudio_server_config_dir="$(pwd)/.rstudio_server"
+rstudio_server_config_dir="$(pwd -P)/.rstudio_server"
 
 mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}/tmp" "${rstudio_server_config_dir}/var/lib/rstudio-server" \
     "${rstudio_server_config_dir}/R/${r_version}"
