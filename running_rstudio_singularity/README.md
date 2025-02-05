@@ -75,13 +75,17 @@ The CCRI version of the RStudio Server script follows the same instructions as t
 - The script doesn't have Slurm-specific instructions
 - The script uses Singularity instead of Apptainer, which includes some changes in variable names (`APPTAINER` -> `SINGULARITY`).
 - `/scratch` and `/home` are mounted to the same paths in the running RStudio Server session
+- The script doesn't have the example of auto-loaded custom function
+
+**Note:** Connecting to the RStudio Server might not work if you are working remotely through CCRI VPN.
 
 ### Usage
 
 1. Copy the [`run_rstudio_singularity_ccri.sh`](run_rstudio_singularity_ccri.sh) script to your project directory.
 2. Update the variables in the script to match your work directory (`workdir`), pulled R version (`r_version`), and Singularity
  image name (`rstudio_singularity_image`). Note: The `workdir` directory must **not** be on the Isilon storage\*.
-3. Start a tmux session
+3. Recommended: Start a tmux session. Closing the terminal also closes the RStudio Server session. tmux helps you keep
+ the session running even after turning off the computer.
 4. Run `bash run_rstudio_singularity_ccri.sh`
 5. `cmd+click` or `ctrl+click` "`http://<hostip>:<port>`" link shown in the terminal or copy-paste it into your web browser.
 6. Login with the username and password specified in the `run_rstudio_singularity_ccri.sh` script (`SINGULARITYENV_USER` and

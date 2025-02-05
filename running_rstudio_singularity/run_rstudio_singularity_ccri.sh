@@ -38,7 +38,7 @@ export SINGULARITYENV_PASSWORD='rstudio4_3_2_test1!'
 
 # Get unused socket
 readonly PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
-readonly HOSTIP=$(nslookup $(hostname) | grep -i address | awk -F" " '{print $2}' | awk -F# '{print $1}' | tail -n 1)
+readonly HOSTIP=$(hostname -I | cut -d' ' -f1)
 
 cat 1>&2 <<END
 To access the server, cmd + click for Mac/ctrl + click for Windows the link or copy-paste it to your web browser:
