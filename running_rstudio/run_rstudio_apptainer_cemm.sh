@@ -31,6 +31,11 @@ echo "======================"
 
 module load apptainer/1.1.9
 
+if [[ -z "${TMPDIR:-}" ]]; then
+    TMPDIR="/tmp"
+fi
+mkdir -p "${TMPDIR}"
+
 rstudio_server_config_dir="${workdir}/.rstudio_server"
 
 mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}/tmp" "${rstudio_server_config_dir}/var/lib/rstudio-server" \
@@ -52,6 +57,8 @@ END
 # Location or .Rprofile - project-wide
 cat >".Renviron" <<END
 R_PROFILE_USER="${rstudio_server_config_dir}/.Rprofile"
+TMPDIR="${TMPDIR}"
+TMP="${TMPDIR}"
 END
 
 # Functions to load at startup
@@ -64,16 +71,10 @@ save_session <- function() {
 END
 
 # Apptainer tmpdir and cachedir variables
-if [[ -n "${TMPDIR:-}" ]]; then
-    APPTAINER_CACHEDIR="$TMPDIR/apptainer_cache"
-    APPTAINER_TMPDIR="$TMPDIR/apptainer_tmp"
-else
-    APPTAINER_CACHEDIR=/tmp
-    APPTAINER_TMPDIR=/tmp
-fi
+APPTAINER_CACHEDIR="$TMPDIR/apptainer_cache"
+APPTAINER_TMPDIR="$TMPDIR/apptainer_tmp"
 mkdir -p "${APPTAINER_CACHEDIR}" "${APPTAINER_TMPDIR}"
-export APPTAINER_CACHEDIR
-export APPTAINER_TMPDIR
+export APPTAINER_CACHEDIR APPTAINER_TMPDIR
 
 # Bind RStudio Server directories
 APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
