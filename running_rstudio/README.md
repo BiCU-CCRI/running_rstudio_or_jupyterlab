@@ -15,10 +15,14 @@ The following RStudio Server scripts are adapted from **Patricia Carey's** (CeMM
 Cluster jobs running in the `intereactiveq` are limited to **12 hours**, so your job will be **killed** after 12 hours. Make sure
  to save your work prior to that.
 
-Prior to running the script, you can pull an appropriate Apptainer image. For example, from [rocker](https://hub.docker.com/r/rocker/rstudio/tags):
+Prior to running the script, you can pull an appropriate Apptainer image. For example, from [rocker](https://hub.docker.com/r/rocker/rstudio/tags)
+ (when running an interactive cluster job!):
 
 ```bash
 module load apptainer/1.1.9
+export APPTAINER_CACHEDIR="/tmp"
+export APPTAINER_TMPDIR="/tmp"
+
 mkdir -p ${HOME}/rstudio_images
 
 apptainer pull --name ${HOME}/rstudio_images/rstudio-4.2.sif docker://rocker/rstudio:4.2
@@ -28,7 +32,7 @@ The script:
 
 - The default work directory is the directory from where the script is run. You can change the work directory at the top
  of the script in the variable `workdir`. This directory is mounted as your *home* directory in the RStudio (bottom right).
-- The path to the Apptainer image is specified to the variable `rstudio_apptainer_image` at the top of the script.
+- The path to the Apptainer image is specified in the variable `rstudio_apptainer_image` at the top of the script.
 - The `APPTAINER_BIND` variable stores all the bound paths to the running RStudio Server.
     - `/nobackup` and `/research` are mounted to the same paths in the running RStudio Server session.
 - Prints standard Slurm out log file gets written out to `./logs`.
@@ -63,8 +67,7 @@ Rocker tidyverse R v4.4 image, built by Aleks. Note: DESeq2 installs successfull
 
 - `/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif`
 
-Singularity image of our docker image dockrstudio_4.2.0. Note: DESeq2 is not able to be installed in the image due to
- `zlib.h` missing:
+Apptainer/Singularity image of our Docker image dockrstudio_4.2.0. Note: DESeq2 cannot be installed in the image due to missing `zlib.h`:
 
 - `/nobackup/lab_ccri_bicu/public/apptainer_images/ccribioinf_dockrstudio_4.2.0-v1.sif`
 
@@ -77,7 +80,7 @@ The CCRI version of the RStudio Server script follows the same instructions as t
 - The script doesn't have Slurm-specific instructions
 - The script uses Singularity instead of Apptainer, which includes some changes in variable names (`APPTAINER` -> `SINGULARITY`)
 - `/scratch` and `/home` are mounted to the same paths in the running RStudio Server session
-- The script doesn't have the example of auto-loaded custom function
+- The script doesn't have an example of an auto-loaded custom function
 
 ### Usage
 

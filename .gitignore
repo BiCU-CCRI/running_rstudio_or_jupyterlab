@@ -1,3 +1,5 @@
-# large singularity image files
 *.sif
 *.simg
+**.log
+**.out
+**.ipynb_checkpoints

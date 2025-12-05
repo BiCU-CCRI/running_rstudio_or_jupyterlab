@@ -31,6 +31,11 @@ echo "======================"
 
 module load apptainer/1.1.9
 
+if [[ -z "${TMPDIR:-}" ]]; then
+    TMPDIR="/tmp"
+fi
+mkdir -p "${TMPDIR}"
+
 rstudio_server_config_dir="${workdir}/.rstudio_server"
 
 mkdir -p -m 700 "${rstudio_server_config_dir}/run" "${rstudio_server_config_dir}/tmp" "${rstudio_server_config_dir}/var/lib/rstudio-server" \
@@ -52,6 +57,8 @@ END
 # Location or .Rprofile - project-wide
 cat >".Renviron" <<END
 R_PROFILE_USER="${rstudio_server_config_dir}/.Rprofile"
+TMPDIR="${TMPDIR}"
+TMP="${TMPDIR}"
 END
 
 # Functions to load at startup
@@ -63,18 +70,27 @@ save_session <- function() {
 }
 END
 
-export APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
+# Apptainer tmpdir and cachedir variables
+APPTAINER_CACHEDIR="$TMPDIR/apptainer_cache"
+APPTAINER_TMPDIR="$TMPDIR/apptainer_tmp"
+mkdir -p "${APPTAINER_CACHEDIR}" "${APPTAINER_TMPDIR}"
+export APPTAINER_CACHEDIR APPTAINER_TMPDIR
+
+# Bind RStudio Server directories
+APPTAINER_BIND="${rstudio_server_config_dir}/run:/run,${rstudio_server_config_dir}/tmp:/tmp,\
 ${rstudio_server_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,${rstudio_server_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
 ${rstudio_server_config_dir}/run:/var/run,\
 ${rstudio_server_config_dir}:${rstudio_server_config_dir},\
 ${workdir}:/home/$(whoami),\
 /nobackup:/nobackup,/research:/research"
+export APPTAINER_BIND
 
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
 # https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
 export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
-export APPTAINERENV_USER="$(whoami)"
+APPTAINERENV_USER="$(whoami)"
+export APPTAINERENV_USER
 export APPTAINERENV_PASSWORD="test0"
 
 # Get unused socket between 8000 and 9000 (these are accessible within the CCRI network):
