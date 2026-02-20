@@ -14,7 +14,7 @@ set -ueo pipefail
 workdir="$(pwd -P)"
 
 r_version="4.4"
-rstudio_apptainer_image="/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-${r_version}-jdk.sif"
+rstudio_apptainer_image="/research/lab_ccri_bicu/public/apptainer_images/tidyverse-${r_version}-jdk.sif"
 
 # Other common SLURM variables https://docs.hpc.shef.ac.uk/en/latest/referenceinfo/scheduler/SLURM/SLURM-environment-variables.html#gsc.tab=0
 echo "======================"

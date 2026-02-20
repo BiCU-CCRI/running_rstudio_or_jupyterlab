@@ -65,11 +65,11 @@ You are not limited to the provided images. You can download your own.
 
 Rocker tidyverse R v4.4 image, built by Aleks. Note: DESeq2 installs successfully with this:
 
-- `/nobackup/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif`
+- `/research/lab_ccri_bicu/public/apptainer_images/tidyverse-4.4-jdk.sif`
 
 Apptainer/Singularity image of our Docker image dockrstudio_4.2.0. Note: DESeq2 cannot be installed in the image due to missing `zlib.h`:
 
-- `/nobackup/lab_ccri_bicu/public/apptainer_images/ccribioinf_dockrstudio_4.2.0-v1.sif`
+- `/research/lab_ccri_bicu/public/apptainer_images/ccribioinf_dockrstudio_4.2.0-v1.sif`
 
 ## RStudio Server on CCRI's machines
 
@@ -93,9 +93,9 @@ The CCRI version of the RStudio Server script follows the same instructions as t
 5. a) If you are in the CCRI network: `cmd+click` or `ctrl+click` "`http://<hostip>:<port>`" link shown in the terminal or
  copy-paste it into your web browser. Note: The `<hostip>` is the server IP address the job is running on (e.g., `10.5.1.157`),
   and the `<port>` is the network port.
-1. b) If you use the CCRI VPN: copy-paste "`ssh -N -f -L localhost:...` into your terminal and then copy-paste `localhost:...`
+6. b) If you use the CCRI VPN: copy-paste "`ssh -N -f -L localhost:...` into your terminal and then copy-paste `localhost:...`
  into your web browser.
-2. Login with the username and password specified in the `run_rstudio_singularity_ccri.sh` script (`SINGULARITYENV_USER` and
+7. Login with the username and password specified in the `run_rstudio_singularity_ccri.sh` script (`SINGULARITYENV_USER` and
  `SINGULARITYENV_PASSWORD` variables).
 
 \*Workdir on the Isilon storage error: `[rserver] ERROR Unexpected exception: Cannot commit transaction. database is locked;
