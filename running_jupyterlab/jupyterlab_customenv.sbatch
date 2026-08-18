@@ -12,16 +12,16 @@ miniconda_path=/path/to/your/miniconda3
 env=example_env
 
 # get tunneling info
-port=$(shuf -i8000-9000 -n1)
+port=$(shuf -i8000-9999 -n1)
 node=$(hostname).int.cemm.at
 user=$(whoami)
 
-host ${node}
+host "${node}"
 
 # activate your environment - no need to update this command
 echo "Activating environment"
 source ${miniconda_path}/bin/activate ${env}
 
 # start jupyterlab session
-jupyter lab --no-browser --port=${port} --ip=${node}
+jupyter lab --no-browser --port="${port}" --ip="${node}"
 

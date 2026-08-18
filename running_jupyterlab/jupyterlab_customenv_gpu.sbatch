@@ -8,15 +8,15 @@
 #SBATCH --gres=gpu:l4_gpu:1
 
 # get tunneling info
-port=$(shuf -i8000-9000 -n1)
+port=$(shuf -i8000-9999 -n1)
 node=$(hostname).int.cemm.at
 user=$(whoami)
 
-host ${node}
+host "${node}"
 
 # activate your environment
 echo "Activating environment"
 source /nobackup/lab_boztug/projects/ccasey/miniconda3/bin/activate simclr_test
 
 # start jupyterlab session
-jupyter lab --no-browser --port=${port} --ip=${node}
+jupyter lab --no-browser --port="${port}" --ip="${node}"

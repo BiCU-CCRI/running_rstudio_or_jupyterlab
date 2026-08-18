@@ -61,4 +61,4 @@ Optional (GPU only):
 
 ## Example environment
 
-Building an environment in which to run Jupyter is dependent on what other packages your project requires. For an example of an environment which is used for training deep learning models using PyTorch via a JuptyerLab session on the CeMM cluster, check `example_env.yml` (you do not need to install all the packages in this environment for your project to run, but it might help you identify which versions of specific packages are compatible with each other.)
+Building an environment in which to run Jupyter is dependent on what other packages your project requires. For an example of an environment which is used for training deep learning models using PyTorch via a JupyterLab session on the CeMM cluster, check `example_env.yml` (you do not need to install all the packages in this environment for your project to run, but it might help you identify which versions of specific packages are compatible with each other.)

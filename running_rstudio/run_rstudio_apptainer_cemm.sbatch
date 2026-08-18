@@ -30,6 +30,7 @@ echo "Job node IP address:   $(nslookup $(hostname) | grep Address: | tail -1 | 
 echo "======================"
 
 module load apptainer/1.1.9
+module load Python/3.11.3-GCCcore-12.3.0
 
 if [[ -z "${TMPDIR:-}" ]]; then
     TMPDIR="/tmp"
@@ -54,7 +55,7 @@ cat >"${rstudio_server_config_dir}/.Rprofile" <<END
 source("${rstudio_server_config_dir}/.Ractivate.R")
 END
 
-# Location or .Rprofile - project-wide
+# Location of .Rprofile - project-wide
 cat >".Renviron" <<END
 R_PROFILE_USER="${rstudio_server_config_dir}/.Rprofile"
 TMPDIR="${TMPDIR}"
@@ -91,7 +92,8 @@ export APPTAINER_BIND
 export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
 APPTAINERENV_USER="$(whoami)"
 export APPTAINERENV_USER
-export APPTAINERENV_PASSWORD="test0"
+APPTAINERENV_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
+export APPTAINERENV_PASSWORD
 
 # Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 readonly PORT=$(python -c '
@@ -115,6 +117,9 @@ readonly HOSTNAME=$(hostname)
 cat 1>&2 <<END
 To access the RStudio Server, cmd + click for Mac/ctrl + click for Windows the link or copy-paste this to your web browser:
 http://${HOSTNAME}.int.cemm.at:${PORT}
+
+Rstudio user: $(whoami)
+RStudio password: ${APPTAINERENV_PASSWORD}
 END
 
 echo "======================"

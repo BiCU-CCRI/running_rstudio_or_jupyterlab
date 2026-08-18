@@ -5,16 +5,16 @@ Run RStudio Server with Apptainer/Singularity on the CeMM cluster (Apptainer/Sin
 **Note:** You can use the included [`.gitignore`](.gitignore) to exclude RStudio Server files you likely do not want to track with `git`.
 
 The following RStudio Server scripts are adapted from **Patricia Carey's** (CeMM IT) original script (`rstudio-singularity-password.bash`)
- she kindly provided to us.
+ which she kindly provided to us.
 
 ## RStudio Server on the CeMM cluster
 
 **Do not use** your **CeMM** or **St. Anna CCRI** **password** as this password will be saved in a text file.
 
 Cluster jobs running in the `intereactiveq` are limited to **12 hours**, so your job will be **killed** after 12 hours. Make sure
- to save your work prior to that.
+ to save your work before that.
 
-Prior to running the script, you can pull an appropriate Apptainer image. For example, from [rocker](https://hub.docker.com/r/rocker/rstudio/tags)
+Before running the script, you can pull an appropriate Apptainer image. For example, from [rocker](https://hub.docker.com/r/rocker/rstudio/tags)
  (when running an interactive cluster job!):
 
 ```bash
@@ -37,20 +37,19 @@ The script:
 - Prints standard Slurm out log file gets written out to `./logs`.
 - Assigned interactive node and port is written to the `./logs/rstudio_apptainer_%j.log` where `%j` is the Slurm job ID.
     - You can simply `cmd+click` or `ctrl+click` the link in the log file to open the RStudio Server, or you can copy-paste
-    the link to your web browser. Please note you have to be in the St. Anna CCRI or CeMM network for this to work.
+    the link to your web browser. Please note that you must be on the St. Anna CCRI or CeMM network for this to work.
 
 ### Usage
 
-1. Copy the [`run_rstudio_apptainer_cemm.sh`](run_rstudio_apptainer_cemm.sh) script to your project directory.
+1. Copy the [`run_rstudio_apptainer_cemm.sbatch`](run_rstudio_apptainer_cemm.sbatch) script to your project directory.
 2. Update the variables in the script to match your work directory (`workdir`), pulled image R version (`r_version`), and
  Apptainer image name (`rstudio_apptainer_image`).
-3. Run `sbatch run_rstudio_apptainer_cemm.sh`.
+3. Run `sbatch run_rstudio_apptainer_cemm.sbatch`.
 4. Look into the `./logs/rstudio_apptainer_<job_id>.log` file for the link: "`http://<hostname>.int.cemm.at:<port>`".
   Note: The `<hostname>` is the node the job is running on (e.g., `d004`), and the `<port>` is the network port (between 8000
    and 9999 - these are available over the St. Anna CCRI network).
 5. `cmd+click` or `ctrl+click` "`http://<hostname>.int.cemm.at:<port>`" link or copy-paste it into your web browser.
-6. Login with the username and password specified in the `run_rstudio_apptainer_cemm.sh` script (`APPTAINERENV_USER` and
- `APPTAINERENV_PASSWORD` variables).
+6. Log in with the username and password. You can find them in the slurm job logfile. Note: These are specified in the `run_rstudio_apptainer_cemm.sbatch` script (`APPTAINERENV_USER` and `APPTAINERENV_PASSWORD` variables).
 
 #### Automatically loaded custom functions
 
