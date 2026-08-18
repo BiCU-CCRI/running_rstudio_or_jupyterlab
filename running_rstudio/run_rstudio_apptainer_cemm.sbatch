@@ -93,12 +93,12 @@ APPTAINERENV_USER="$(whoami)"
 export APPTAINERENV_USER
 export APPTAINERENV_PASSWORD="test0"
 
-# Get unused socket between 8000 and 9000 (these are accessible within the CCRI network):
+# Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 readonly PORT=$(python -c '
 import socket
 import random
 
-def find_port_in_range(start=8000, end=9000):
+def find_port_in_range(start=8000, end=9999):
     while True:
         port = random.randint(start, end)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
