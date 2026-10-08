@@ -7,21 +7,19 @@
 #SBATCH --job-name=jupyter-lab
 #SBATCH --output=jupyter-lab-%j.log
 
-# update these variables before running the script
-miniconda_path=/path/to/your/miniconda3
-env=example_env
+# Update these variables before running the script
+MINICONDA_PATH="/path/to/your/miniconda3"
+ENV="example_env"
 
 # get tunneling info
-port=$(shuf -i8000-9000 -n1)
+port=$(shuf -i8000-9999 -n1)
 node=$(hostname).int.cemm.at
-user=$(whoami)
 
-host ${node}
+host "${node}"
 
-# activate your environment - no need to update this command
+# Activate your environment
 echo "Activating environment"
-source ${miniconda_path}/bin/activate ${env}
+source "${MINICONDA_PATH}"/bin/activate "${ENV}"
 
-# start jupyterlab session
-jupyter lab --no-browser --port=${port} --ip=${node}
-
+# Start jupyterlab session
+jupyter lab --no-browser --port="${port}" --ip="${node}"

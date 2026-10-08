@@ -2,7 +2,6 @@
 
 How to run JupyterLab sessions on the CeMM cluster.
 
-
 ## Running JupyterLab with a standard Python 3 / R kernel
 
 Patricia provides a sample sbatch submission script `jupyterlab.sbatch` to run a JupyterLab session on the CeMM cluster. This is also available on the CeMM Sharepoint.
@@ -18,10 +17,9 @@ Patricia provides a sample sbatch submission script `jupyterlab.sbatch` to run a
 
 5. Scroll to the bottom of the `jupyter-lab-<jobID>.log` file to find the link starting with "`http//d0...`"
 
-6. Copy and paste the link starting with "`http//d0...`" into your web browser. This should work from either the CCRI or the CeMM network.
+6. Copy and paste the link starting with "`http//d0...`" into your web browser. This should work from either the St. Anna CCRI or the CeMM network.
 
 7. Open your Jupyter notebook and choose your kernel.
-
 
 ## Running JupyterLab with your own environment as a kernel and/or using GPU nodes with JupyterLab
 
@@ -32,11 +30,11 @@ To use your own environment as a kernel and/or to access the CeMM GPU nodes via 
 2. Activate your conda/mamba environment.  
 `mamba activate <your-env-name>`
 
-3. Install `jupyterlab` in your conda/mamba environment.    
+3. Install `jupyterlab` in your conda/mamba environment.
 `mamba install jupyterlab`
 
 4. Check that ipykernel was also installed as a dependency of `jupyterlab` (should be listed when running this command).  
-`mamba list ipykernel` 
+`mamba list ipykernel`
 
 5. To add your environment as a kernel, run the following command.  
 `python -m ipykernel install --user --name <your-env-name> --display-name "<Your Env Name>"`
@@ -54,7 +52,7 @@ GPU usage: `sbatch jupyterlab_customenv_gpu.sbatch`
 
 9. Scroll to the bottom of the `jupyter-lab-<jobID>.log` file to find the link starting with "`http//d0...`"
 
-10. Copy and paste the link starting with "`http//d0...`" into your web browser. This should work from either the CCRI or the CeMM network.
+10. Copy and paste the link starting with "`http//d0...`" into your web browser. This should work from either the St. Anna CCRI or the CeMM network.
 
 11. Open your Jupyter notebook and choose your kernel. You should see your environment listed under the display name you chose.
 
@@ -63,4 +61,4 @@ Optional (GPU only):
 
 ## Example environment
 
-Building an environment in which to run Jupyter is dependent on what other packages your project requires. For an example of an environment which is used for training deep learning models using PyTorch via a JuptyerLab session on the CeMM cluster, check `example_env.yml` (you do not need to install all the packages in this environment for your project to run, but it might help you identify which versions of specific packages are compatible with each other.)
+Building an environment in which to run Jupyter is dependent on what other packages your project requires. For an example of an environment which is used for training deep learning models using PyTorch via a JupyterLab session on the CeMM cluster, check `example_env.yml` (you do not need to install all the packages in this environment for your project to run, but it might help you identify which versions of specific packages are compatible with each other.)
