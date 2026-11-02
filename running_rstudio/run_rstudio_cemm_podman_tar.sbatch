@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=rstudio_podman
+#SBATCH --job-name=rstudio_podman_tar
 #SBATCH --partition=interactiveq
 #SBATCH --qos=interactiveq
 #SBATCH --nodes=1
@@ -7,16 +7,25 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=25G
 #SBATCH --time=06:00:00
-#SBATCH --output=logs/rstudio_podman_%j.log # Slurm writes everything to --output if --error logs/rstudio_podman_%j.err is not set
+#SBATCH --output=rstudio_podman_tar_%j.log # Slurm writes everything to --output if --error <error_output> is not set
 
 set -euo pipefail
+
+# Run the script with:
+#     SLURM_UMASK=0077 sbatch run_rstudio_cemm_podman_tar.sbatch
+#  to ensure group and others cannot see your password in the log file but the 
+#  files produced by the script have default `umask` settings
+
+set -euo pipefail
+
+umask 0007
 
 workdir="$(pwd -P)"
 
 R_VERSION="4.4.2"
-IMAGE_NAME="r_4.4.2_tidyverse_jdk_dev"
-IMAGE_TAG="latest"
-IMAGE_TAR="/nobackup/lab_ccri_bicu/internal/joppelt/BiCU-CCRI/jo005_emilia_rnaseq/envs/${IMAGE_NAME}-${IMAGE_TAG}.tar"
+IMAGE_NAME="r_4.4.2_tidyverse_jdk"
+IMAGE_TAG="20261027"
+RSTUDIO_IMAGE_TAR="/research/lab_ccri_bicu/public/docker_images/${IMAGE_NAME}-${IMAGE_TAG}.tar"
 
 # Other common SLURM variables https://docs.hpc.shef.ac.uk/en/latest/referenceinfo/scheduler/SLURM/SLURM-environment-variables.html#gsc.tab=0
 echo "======================"
@@ -33,7 +42,7 @@ echo "======================"
 
 module load podman/5.8.6-GCCcore-14.3.0
 
-# Host-side scratch space for Podman only
+# Host-side scratch space
 host_tmpdir="$(mktemp -d -p "${TMPDIR:-/tmp}")"
 cleanup() {
     rm -rf "${host_tmpdir}"
@@ -42,9 +51,10 @@ trap cleanup EXIT
 trap 'exit 143' TERM INT
 
 # Runtime directories for rootless Podman (Slurm jobs have no systemd user session)
-export XDG_RUNTIME_DIR="${host_tmpdir}/podman_runtime_$(id -u)"
-export PODMAN_TMPDIR="${host_tmpdir}/podman_tmp"
-mkdir -p -m 700 "${XDG_RUNTIME_DIR}" "${PODMAN_TMPDIR}"
+XDG_RUNTIME_DIR="${host_tmpdir}/podman_runtime_$(id -u)"
+PODMAN_TMPDIR="${host_tmpdir}/podman_tmp"
+export XDG_RUNTIME_DIR PODMAN_TMPDIR
+mkdir -m 700 "${XDG_RUNTIME_DIR}" "${PODMAN_TMPDIR}"
 
 rstudio_config_dir="${workdir}/.rstudio_server"
 
@@ -96,6 +106,19 @@ save_session <- function() {
 }
 END
 
+PODMAN_BIND=(
+    -v "${rstudio_config_dir}/run:/run" \
+    -v "${rstudio_config_dir}/tmp:/tmp" \
+    -v "${workdir}:/home/${USER_NAME}" \
+    -v "${rstudio_config_dir}/rsession.conf:/etc/rstudio/rsession.conf" \
+    -v "${rstudio_config_dir}/logging.conf:/etc/rstudio/logging.conf" \
+    -v "${rstudio_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server" \
+    -v "${rstudio_config_dir}/var/run/rstudio-server:/var/run/rstudio-server" \
+    -v "${rstudio_config_dir}:${rstudio_config_dir}" \
+    -v /nobackup:/nobackup \
+    -v /research:/research:ro
+)
+
 # Session secrets. PASSWORD is passed to the container by name (-e PASSWORD),
 #  so it does not show up in the process list.
 PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
@@ -119,33 +142,26 @@ echo "Job started at: $(date)"
 cat 1>&2 <<END
 
 To access the RStudio Server, cmd + click for Mac/ctrl + click for Windows the link or copy-paste this to your web browser:
-  http://${NODE_ADDRESS}:${PORT}
+    http://${NODE_ADDRESS}:${PORT}
 with:
-  Rstudio user: ${USER_NAME}
-  RStudio password: ${PASSWORD}
+    Rstudio user: ${USER_NAME}
+    RStudio password: ${PASSWORD}
 
-Note: You might have to wait approx. a minute for the RStudio Server to start up before you can log in.
+Note: You might have to wait a couple minutes for the RStudio Server to start up before you can log in.
 
 END
 
-# Launch the RStudio using Podman and tar image archive. The container will be removed after the job ends.
+# Launch the RStudio using Podman with an tar image archive. The container will be removed after the job ends.
+#    --user "$(id -u):$(id -g)" \ # Do not use this or you will get "Error: OCI runtime error: runc: runc create failed: unable to start container process: error during container init: unable to setup user: cannot setgid to unmapped gid 20800 in user namespace" error
+#    --userns=keep-id \ # Do not use this or you will get "Error: OCI runtime error: runc: runc create failed: unable to start container process: error during container init: unable to setup user: cannot setgid to unmapped gid 20800 in user namespace" error
 podman --cgroup-manager=cgroupfs run --rm \
-    --userns=keep-id \
+    --group-add keep-groups \
     --net=host \
     -e "USER=${USER_NAME}" \
     -e PASSWORD \
     -e RSTUDIO_SESSION_TIMEOUT=0 \
-    -v "${rstudio_config_dir}/run:/run" \
-    -v "${rstudio_config_dir}/tmp:/tmp" \
-    -v "${rstudio_config_dir}/rsession.conf:/etc/rstudio/rsession.conf" \
-    -v "${rstudio_config_dir}/logging.conf:/etc/rstudio/logging.conf" \
-    -v "${rstudio_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server" \
-    -v "${rstudio_config_dir}/var/run/rstudio-server:/var/run/rstudio-server" \
-    -v "${rstudio_config_dir}:${rstudio_config_dir}" \
-    -v "${workdir}:/home/${USER_NAME}" \
-    -v /nobackup:/nobackup \
-    -v /research:/research \
-    docker-archive:"${IMAGE_TAR}" \
+    "${MOUNTS[@]}" \
+    docker-archive:"${RSTUDIO_IMAGE_TAR}" \
     rserver --www-port "${PORT}" \
     --server-user="${USER_NAME}" \
     --auth-none=0 \
