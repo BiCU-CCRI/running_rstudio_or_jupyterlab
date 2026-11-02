@@ -38,7 +38,7 @@ Podman is a drop-in replacement for Docker. To build a Docker image with Podman,
 module load podman/5.8.6-GCCcore-14.3.0
 
 DOCKERFILE="/path/to/your/image.Dockerfile"
-IMAGE_NAME="${DOCKERFILE%.Dockerfile}"
+IMAGE_NAME="$(basename "${DOCKERFILE}" .Dockerfile)"
 IMAGE_TAG=$(date +%Y%m%d)
 IMAGE_REF="localhost/${IMAGE_NAME}:${IMAGE_TAG}"
 BUILD_LOG="${IMAGE_NAME}-${IMAGE_TAG}.log"

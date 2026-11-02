@@ -106,6 +106,13 @@ save_session <- function() {
 }
 END
 
+# Session secrets. PASSWORD is passed to the container by name (-e PASSWORD),
+#  so it does not show up in the process list.
+PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
+export PASSWORD
+USER_NAME="$(whoami)"
+
+# Bind mounts for the container
 PODMAN_BIND=(
     -v "${rstudio_config_dir}/run:/run" \
     -v "${rstudio_config_dir}/tmp:/tmp" \
@@ -116,14 +123,9 @@ PODMAN_BIND=(
     -v "${rstudio_config_dir}/var/run/rstudio-server:/var/run/rstudio-server" \
     -v "${rstudio_config_dir}:${rstudio_config_dir}" \
     -v /nobackup:/nobackup \
-    -v /research:/research:ro
+    -v /research:/research:ro \
+    -v "${workdir}:${workdir}"
 )
-
-# Session secrets. PASSWORD is passed to the container by name (-e PASSWORD),
-#  so it does not show up in the process list.
-PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
-export PASSWORD
-USER_NAME="$(whoami)"
 
 # Unused port between 8000 and 9999
 PORT="$(comm -23 <(seq 8000 9999) \
@@ -160,7 +162,7 @@ podman --cgroup-manager=cgroupfs run --rm \
     -e "USER=${USER_NAME}" \
     -e PASSWORD \
     -e RSTUDIO_SESSION_TIMEOUT=0 \
-    "${MOUNTS[@]}" \
+    "${PODMAN_BIND[@]}" \
     docker-archive:"${RSTUDIO_IMAGE_TAR}" \
     rserver --www-port "${PORT}" \
     --server-user="${USER_NAME}" \

@@ -49,8 +49,8 @@ trap cleanup EXIT
 trap 'exit 143' TERM INT
 
 # Runtime directories for Apptainer
-APPTAINER_CACHEDIR="$TMPDIR/apptainer_cache"
-APPTAINER_TMPDIR="$TMPDIR/apptainer_tmp"
+APPTAINER_CACHEDIR="${host_tmpdir}/apptainer_cache"
+APPTAINER_TMPDIR="${host_tmpdir}/apptainer_tmp"
 mkdir -p "${APPTAINER_CACHEDIR}" "${APPTAINER_TMPDIR}"
 export APPTAINER_CACHEDIR APPTAINER_TMPDIR
 
@@ -104,9 +104,14 @@ save_session <- function() {
 }
 END
 
-# Bind RStudio Server directories
-APPTAINER_BIND="
-${rstudio_config_dir}/run:/run,\
+# Session secrets. APPTAINERENV_PASSWORD is passed to the container by name (--env APPTAINERENV_PASSWORD),
+#  so it does not show up in the process list.
+APPTAINERENV_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
+APPTAINERENV_USER="$(whoami)"
+export APPTAINERENV_PASSWORD APPTAINERENV_USER
+
+# Bind mounts for the container
+APPTAINER_BIND="${rstudio_config_dir}/run:/run,\
 ${rstudio_config_dir}/tmp:/tmp,\
 ${workdir}:/home/${APPTAINERENV_USER},\
 ${rstudio_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,\
@@ -115,7 +120,8 @@ ${rstudio_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
 ${rstudio_config_dir}/var/run/rstudio-server:/var/run/rstudio-server,\
 ${rstudio_config_dir}:${rstudio_config_dir},\
 /nobackup:/nobackup,\
-/research:/research:ro"
+/research:/research:ro,\
+${workdir}:${workdir}"
 export APPTAINER_BIND
 
 # Do not suspend idle sessions
@@ -123,12 +129,6 @@ export APPTAINER_BIND
 # https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
 export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
 # Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
-
-# Session secrets. APPTAINERENV_PASSWORD is passed to the container by name (--env APPTAINERENV_PASSWORD),
-#  so it does not show up in the process list.
-APPTAINERENV_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
-APPTAINERENV_USER="$(whoami)"
-export APPTAINERENV_PASSWORD APPTAINERENV_USER
 
 # Unused port between 8000 and 9999
 PORT="$(comm -23 <(seq 8000 9999) \
