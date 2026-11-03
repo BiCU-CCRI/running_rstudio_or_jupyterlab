@@ -127,7 +127,8 @@ export APPTAINER_BIND
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
 # https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
-export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
+APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
+export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT
 # Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 
 # Unused port between 8000 and 9999
@@ -158,9 +159,6 @@ END
 
 apptainer exec \
     --cleanenv \
-    --env "USER=${APPTAINERENV_USER}" \
-    --env APPTAINERENV_PASSWORD \
-    --env RSTUDIO_SESSION_TIMEOUT=0 \
     "${RSTUDIO_IMAGE_SIF}" \
     rserver --www-port "${PORT}" \
     --server-user="${APPTAINERENV_USER}" \
