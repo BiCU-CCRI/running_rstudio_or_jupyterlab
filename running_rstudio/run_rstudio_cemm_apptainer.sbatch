@@ -22,8 +22,9 @@ umask 0007
 
 workdir="$(pwd -P)"
 
-R_VERSION="4.4"
-RSTUDIO_IMAGE_SIF="/research/lab_ccri_bicu/public/apptainer_images/tidyverse-${R_VERSION}-jdk.sif"
+R_VERSION="4.4.1"
+IMAGE_NAME="tidyverse-4.4-jdk"
+RSTUDIO_IMAGE_SIF="/research/lab_ccri_bicu/public/apptainer_images/${IMAGE_NAME}.sif"
 
 # Other common SLURM variables https://docs.hpc.shef.ac.uk/en/latest/referenceinfo/scheduler/SLURM/SLURM-environment-variables.html#gsc.tab=0
 echo "======================"
@@ -56,9 +57,12 @@ export APPTAINER_CACHEDIR APPTAINER_TMPDIR
 
 rstudio_config_dir="${workdir}/.rstudio_server"
 
-mkdir -p -m 700 "${rstudio_config_dir}/run" "${rstudio_config_dir}/tmp" \
-    "${rstudio_config_dir}/var/lib/rstudio-server" "${rstudio_config_dir}/var/run/rstudio-server" \
-    "${rstudio_config_dir}/R/${R_VERSION}" "${rstudio_config_dir}/db"
+mkdir -p -m 750 \
+    "${rstudio_config_dir}/run" \
+    "${rstudio_config_dir}/tmp" \
+    "${rstudio_config_dir}/var/lib/rstudio-server" \
+    "${rstudio_config_dir}/R/${R_VERSION}" \
+    "${rstudio_config_dir}/db"
 
 # Create SQLite DB config to prevent rserver initialization crashes
 cat >"${rstudio_config_dir}/db.conf" <<END
@@ -83,6 +87,7 @@ END
 
 # .Rprofile and default functions
 cat >"${rstudio_config_dir}/.Rprofile" <<END
+.libPaths(c("${rstudio_config_dir}/R/${R_VERSION}", .libPaths()))
 source("${rstudio_config_dir}/.Ractivate.R")
 END
 
@@ -104,20 +109,21 @@ save_session <- function() {
 }
 END
 
-# Session secrets. APPTAINERENV_PASSWORD is passed to the container by name (--env APPTAINERENV_PASSWORD),
-#  so it does not show up in the process list.
-APPTAINERENV_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
-APPTAINERENV_USER="$(whoami)"
+# Session secrets
+# APPTAINERENV_ prefix passes the variable to the container environment even with --cleanenv
+PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
+USER_NAME="$(whoami)"
+APPTAINERENV_PASSWORD="${PASSWORD}"
+APPTAINERENV_USER="${USER_NAME}"
 export APPTAINERENV_PASSWORD APPTAINERENV_USER
 
 # Bind mounts for the container
 APPTAINER_BIND="${rstudio_config_dir}/run:/run,\
 ${rstudio_config_dir}/tmp:/tmp,\
-${workdir}:/home/${APPTAINERENV_USER},\
+${workdir}:/home/${USER_NAME},\
 ${rstudio_config_dir}/rsession.conf:/etc/rstudio/rsession.conf,\
 ${rstudio_config_dir}/logging.conf:/etc/rstudio/logging.conf,\
 ${rstudio_config_dir}/var/lib/rstudio-server:/var/lib/rstudio-server,\
-${rstudio_config_dir}/var/run/rstudio-server:/var/run/rstudio-server,\
 ${rstudio_config_dir}:${rstudio_config_dir},\
 /nobackup:/nobackup,\
 /research:/research:ro,\
@@ -127,11 +133,11 @@ export APPTAINER_BIND
 # Do not suspend idle sessions
 # Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
 # https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+# APPTAINERENV_ prefix passes the variable to the container environment even with --cleanenv
 APPTAINERENV_RSTUDIO_SESSION_TIMEOUT=0
 export APPTAINERENV_RSTUDIO_SESSION_TIMEOUT
-# Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 
-# Unused port between 8000 and 9999
+# Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 PORT="$(comm -23 <(seq 8000 9999) \
     <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | grep "[0-9]\{1,5\}" | sort -u) | shuf -n 1)"
 readonly PORT
@@ -150,18 +156,19 @@ cat 1>&2 <<END
 To access the RStudio Server, cmd + click for Mac/ctrl + click for Windows the link or copy-paste this to your web browser:
     http://${NODE_ADDRESS}:${PORT}
 with:
-    Rstudio user: ${APPTAINERENV_USER}
-    RStudio password: ${APPTAINERENV_PASSWORD}
+    Rstudio user: ${USER_NAME}
+    RStudio password: ${PASSWORD}
 
 Note: You might have to wait a couple minutes for the RStudio Server to start up before you can log in.
 
 END
 
+# Launch the RStudio using Apptainer with a SIF image archive. The container will be removed after the job ends.
 apptainer exec \
     --cleanenv \
     "${RSTUDIO_IMAGE_SIF}" \
     rserver --www-port "${PORT}" \
-    --server-user="${APPTAINERENV_USER}" \
+    --server-user="${USER_NAME}" \
     --auth-none=0 \
     --auth-pam-helper-path=pam-helper \
     --auth-stay-signed-in-days=30 \

@@ -22,7 +22,7 @@ umask 0007
 
 workdir="$(pwd -P)"
 
-R_VERSION="4.4.2"
+R_VERSION="4.4.1"
 IMAGE_NAME="tidyverse-4.4-jdk"
 RSTUDIO_IMAGE_SIF="/research/lab_ccri_bicu/public/apptainer_images/${IMAGE_NAME}.sif"
 
@@ -57,9 +57,13 @@ mkdir -m 700 "${XDG_RUNTIME_DIR}" "${PODMAN_TMPDIR}"
 
 rstudio_config_dir="${workdir}/.rstudio_server"
 
-mkdir -p -m 700 "${rstudio_config_dir}/run" "${rstudio_config_dir}/tmp" \
-    "${rstudio_config_dir}/var/lib/rstudio-server" "${rstudio_config_dir}/var/run/rstudio-server" \
-    "${rstudio_config_dir}/R/${R_VERSION}" "${rstudio_config_dir}/db"
+mkdir -p -m 750 \
+    "${rstudio_config_dir}/run" \
+    "${rstudio_config_dir}/tmp" \
+    "${rstudio_config_dir}/var/lib/rstudio-server" \
+    "${rstudio_config_dir}/var/run/rstudio-server" \
+    "${rstudio_config_dir}/R/${R_VERSION}" \
+    "${rstudio_config_dir}/db"
 
 # Create SQLite DB config to prevent rserver initialization crashes
 cat >"${rstudio_config_dir}/db.conf" <<END
@@ -84,6 +88,7 @@ END
 
 # .Rprofile and default functions
 cat >"${rstudio_config_dir}/.Rprofile" <<END
+.libPaths(c("${rstudio_config_dir}/R/${R_VERSION}", .libPaths()))
 source("${rstudio_config_dir}/.Ractivate.R")
 END
 
@@ -105,11 +110,11 @@ save_session <- function() {
 }
 END
 
-# Session secrets. PASSWORD is passed to the container by name (-e PASSWORD),
-#  so it does not show up in the process list.
+# Session secrets
+# PASSWORD is passed to the container by name (-e PASSWORD), so it does not show up in the process list.
 PASSWORD="$(openssl rand -base64 24 | tr -d '/+=' | head -c 20)"
-export PASSWORD
 USER_NAME="$(whoami)"
+export PASSWORD
 
 # Bind mounts for the container
 PODMAN_BIND=(
@@ -125,8 +130,13 @@ PODMAN_BIND=(
     -v /research:/research:ro \
     -v "${workdir}:${workdir}"
 )
+# Do not suspend idle sessions
+# Alternative to setting session-timeout-minutes=0 in /etc/rstudio/rsession.conf
+# https://github.com/rstudio/rstudio/blob/v1.4.1106/src/cpp/server/ServerSessionManager.cpp#L126
+RSTUDIO_SESSION_TIMEOUT=0
+export RSTUDIO_SESSION_TIMEOUT
 
-# Unused port between 8000 and 9999
+# Get unused socket between 8000 and 9999 (these are accessible within the St. Anna CCRI network):
 PORT="$(comm -23 <(seq 8000 9999) \
     <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | grep "[0-9]\{1,5\}" | sort -u) | shuf -n 1)"
 readonly PORT
@@ -148,13 +158,11 @@ with:
     Rstudio user: ${USER_NAME}
     RStudio password: ${PASSWORD}
 
-Note: You might have to wait a couple minutes for the RStudio Server to start up before you can log in.
+Note: You might have to wait a couple minutes for the RStudio Server to start up before you can log in. Wait until you see something like "<current date> [rserver] INFO Reading rserver configuration from '/etc/rstudio/rserver.conf'"
 
 END
 
-# Launch RStudio using Podman with a SIF image archive. The container will be removed after the job ends.
-#    --user "$(id -u):$(id -g)" \ # Do not use this or you will get "Error: OCI runtime error: runc: runc create failed: unable to start container process: error during container init: unable to setup user: cannot setgid to unmapped gid 20800 in user namespace" error
-#    --userns=keep-id \ # Do not use this or you will get "Error: OCI runtime error: runc: runc create failed: unable to start container process: error during container init: unable to setup user: cannot setgid to unmapped gid 20800 in user namespace" error
+# Launch the RStudio using Podman with a SIF image archive. The container will be removed after the job ends.
 podman --cgroup-manager=cgroupfs run --rm \
     --group-add keep-groups \
     --net=host \
