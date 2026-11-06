@@ -164,6 +164,8 @@ END
 
 # Launch the RStudio using Podman with a SIF image archive. The container will be removed after the job ends.
 podman --cgroup-manager=cgroupfs run --rm \
+    --user "$(id -u):$(id -g)" \
+    --userns=keep-id \
     --group-add keep-groups \
     --net=host \
     -e "USER=${USER_NAME}" \
