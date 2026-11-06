@@ -11,9 +11,16 @@
 MINICONDA_PATH="/path/to/your/miniconda3"
 ENV="example_env"
 
-# get tunneling info
-port=$(shuf -i8000-9999 -n1)
-node=$(hostname).int.cemm.at
+# Unused port between 8000 and 9999
+port="$(comm -23 <(seq 8000 9999) \
+    <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | grep "[0-9]\{1,5\}" | sort -u) | shuf -n 1)"
+readonly port
+if [[ -z "${port}" ]]; then
+    echo "ERROR: no free port found between 8000 and 9999" >&2
+    exit 1
+fi
+node="$(hostname).int.cemm.at"
+readonly node
 
 host "${node}"
 
