@@ -103,7 +103,7 @@ Apptainer/Singularity image of our Docker image `dockrstudio_4.2.0`. Note: DESeq
  relaunches. Only `R_PROFILE_USER`, `TMPDIR`, and `TMP` are managed by the script.
 - **renv projects:** the script sources your project's `renv/activate.R` automatically if present.
 
-> [!WARNING]
+> [!INFO]
 > `renv` partitions its package cache and library by OS, so switching between images based on different base image releases
 > means you'll need to run `renv::restore(prompt = FALSE)` once per OS the project is launched under.
 
