@@ -8,7 +8,7 @@ Run RStudio Server with Podman or Apptainer/Singularity on the CeMM cluster.
 
 **Do not use** your **CeMM** or **St. Anna CCRI** **password** as this password will be saved in a text file.
 
-Cluster jobs running in the `intereactiveq` are limited to **12 hours**, so your job will be **killed** after 12 hours. Make sure
+Cluster jobs running in the `interactiveq` are limited to **12 hours**, so your job will be **killed** after 12 hours. Make sure
  to save your work before that.
 
 Before running the script, you can pull an appropriate image. For example, from [rocker](https://hub.docker.com/r/rocker/rstudio/tags)
@@ -96,8 +96,16 @@ Apptainer/Singularity image of our Docker image `dockrstudio_4.2.0`. Note: DESeq
 - All the RStudio Server settings and files are saved in `<workdir>/.rstudio_server`. This includes the installed libraries.
  If you re-run the script from the same directory (with the same R version), all the previously installed libraries are
  automatically available.
-- You might see `.cache`, `.config`, and `.local` directories, and `.Renviron` and `.Rhistory` files created in the directory from
-     which you executed the script. These can be safely deleted as they are regenerated for each RStudio Server instance.
+- You might see `.cache`, `.config`, and `.local` directories, and a `.Rhistory` file created in the directory from
+ which you executed the script. These can be safely deleted as they are regenerated for each RStudio Server instance.
+- An already existing `.Renviron` in the working directory is updated (not replaced) by the script, so any settings you've
+ added yourself - for example, `RENV_PATHS_CACHE`/`RENV_CONFIG_SANDBOX_ENABLED` for projects using `renv` - are preserved across
+ relaunches. Only `R_PROFILE_USER`, `TMPDIR`, and `TMP` are managed by the script.
+- **renv projects:** the script sources your project's `renv/activate.R` automatically if present.
+
+> [!WARNING]
+> `renv` partitions its package cache and library by OS, so switching between images based on different base image releases
+> means you'll need to run `renv::restore(prompt = FALSE)` once per OS the project is launched under.
 
 ## Acknowledgement
 

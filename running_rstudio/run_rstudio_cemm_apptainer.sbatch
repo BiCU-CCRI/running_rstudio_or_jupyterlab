@@ -86,19 +86,27 @@ logger-type=stderr
 END
 
 # .Rprofile and default functions
+# Active renv environment if present, and load functions from .Ractivate.R
 cat >"${rstudio_config_dir}/.Rprofile" <<END
 .libPaths(c("${rstudio_config_dir}/R/${R_VERSION}", .libPaths()))
+if (file.exists("${workdir}/renv/activate.R")) source("${workdir}/renv/activate.R")
 source("${rstudio_config_dir}/.Ractivate.R")
 END
 
 # Location of .Rprofile - project-wide
 # TMPDIR must be a path that exists INSIDE the container. /tmp in the container
 #  is the bind mount of ${rstudio_config_dir}/tmp, so do not use the host TMPDIR here.
-cat >"${workdir}/.Renviron" <<END
-R_PROFILE_USER="${rstudio_config_dir}/.Rprofile"
-TMPDIR="/tmp"
-TMP="/tmp"
-END
+renviron_file="${workdir}/.Renviron"
+touch "${renviron_file}"
+merged_renviron="$(mktemp -p "${host_tmpdir}")"
+grep -v -E '^(R_PROFILE_USER|TMPDIR|TMP)[[:space:]]*=' "${renviron_file}" > "${merged_renviron}" || true
+{
+    cat "${merged_renviron}"
+    echo "R_PROFILE_USER=\"${rstudio_config_dir}/.Rprofile\""
+    echo "TMPDIR=\"/tmp\""
+    echo "TMP=\"/tmp\""
+} > "${renviron_file}"
+rm -f "${merged_renviron}"
 
 # Functions to load at startup
 cat >"${rstudio_config_dir}/.Ractivate.R" <<END
@@ -159,7 +167,7 @@ with:
     Rstudio user: ${USER_NAME}
     RStudio password: ${PASSWORD}
 
-Note: You might have to wait a couple minutes for the RStudio Server to start up before you can log in.
+You might have to wait a couple minutes for the RStudio Server to start up before you can log in.
 
 END
 
