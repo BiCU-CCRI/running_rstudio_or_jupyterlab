@@ -3,3 +3,6 @@
 **.log
 **.out
 **.ipynb_checkpoints
+renv.lock
+renv/
+.Rprofile
