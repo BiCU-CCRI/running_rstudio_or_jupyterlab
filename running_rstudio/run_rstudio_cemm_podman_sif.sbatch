@@ -9,8 +9,6 @@
 #SBATCH --time=06:00:00
 #SBATCH --output=rstudio_podman_sif_%j.log # Slurm writes everything to --output if --error <error_output> is not set
 
-set -euo pipefail
-
 # Run the script with:
 #     SLURM_UMASK=0077 sbatch run_rstudio_cemm_podman_sif.sbatch
 #  to ensure group and others cannot see your password in the log file but the 
